@@ -1,7 +1,7 @@
 ---
 layout: page
-permalink: /CV/
-title: CV
+permalink: /cv/
+title: cv
 description: Materials for courses you taught. Replace this text with your description.
 nav: true
 ---
