@@ -6,9 +6,6 @@ description: Materials for courses you taught. Replace this text with your descr
 nav: true
 ---
 
-## MISC
-# blabla
+Download [PDF version](https://drive.google.com/file/d/1rk5WBB_BAcJ4RJsUMgjZwGYfZqBfFl2P/view?usp=sharing). The PDF should be embedded underneath -- uses Google Docs for embedding and works if the PDF is on dropbox. Works sporadically if PDF is elsewhere too.
 
-For now, this page is assumed to be a static description of your courses. You can convert it to a collection similar to `_projects/` so that you can have a dedicated page for each course.
-
-Organize your courses by years, topics, or universities, however you like!
+{% include embedpdf.html source="https://drive.google.com/file/d/1rk5WBB_BAcJ4RJsUMgjZwGYfZqBfFl2P/view?usp=sharing" width=100 height=800 %}
