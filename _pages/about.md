@@ -17,8 +17,8 @@ social: true  # includes social icons at the bottom of the page
 
 #### PhD student at the University of Groningen
 
-Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com){:target="\_blank"}. You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
+I am interested in explanations of the human mind, engineering of computation, and where the two overlap.
 
-Put your address / P.O. box / other info right below your picture. You can also disable any these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
+My Ph.D. is on non-digital computing theories in the [MINDS group](https://www.ai.rug.nl/minds/){:target="\_blank"}. These theories are developed to be relevant for brains, minds, and future non-digital microchips.  I am currently working on [conceptor](https://arxiv.org/abs/1406.2671), a technique to unlock new types of control of high dimensional non-linear (neural) dynamics. I am funded by the European project PostDigital. 
 
-Link to your social media connections, too. This theme is set up to use [Font Awesome icons](http://fortawesome.github.io/Font-Awesome/){:target="\_blank"} and [Academicons](https://jpswalsh.github.io/academicons/){:target="\_blank"}, like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.
+Before starting my Ph.D., I completed the [Arts et Métiers](https://artsetmetiers.fr/en){:target="\_blank"} engineering school with a specialization in [Neurosciences](https://www.bme-paris.com/program/master-2/bioengineering-and-innovation-in-neurosciences-bin/){:target="\_blank"}. I also obtained a master’s degree in Cognitive Science at École Normale Supérieure ([Cogmaster](https://cogmaster.ens.psl.eu/en){:target="\_blank"}). During my studies, I did two 6 months of research internships, one with Mehdi Khamassi on Reinforcement Learning, one with Axel Cleeremans on metacognition. 
