@@ -17,7 +17,7 @@ social: true  # includes social icons at the bottom of the page
 
 #### PhD student at the University of Groningen
 
-I am interested in explanations of the human mind, engineering of computation, and where the two overlap.
+I am interested in explanations of the human mind, engineering of computational artifacts, and where the two overlap.
 
 My Ph.D. is on non-digital computing theories in the [MINDS group](https://www.ai.rug.nl/minds/){:target="\_blank"}. These theories are developed to be relevant for brains, minds, and future non-digital microchips.  I am currently working on [conceptor](https://arxiv.org/abs/1406.2671), a technique to unlock new types of control of high dimensional non-linear (neural) dynamics. I am funded by the European project PostDigital. 
 
