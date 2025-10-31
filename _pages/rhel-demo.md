@@ -3,74 +3,72 @@ layout: page
 title: RHEL demo
 permalink: /rhel-demo/
 nav: true
-mathjax: true
 ---
 
-## RHEL Demo Overview
+## RHEL Demo: Coupled Harmonic Oscillators
 
-This video demonstrates a mechanical example of the Recurrent Equilibrium Learning (RHEL) model. The system consists of two masses and three springs arranged as follows:
-- **Mass 1 ($\phi_1$)** is connected to a fixed wall on the left.
-- **Mass 2 ($\phi_2$)** is connected to Mass 1 and a fixed wall on the right.
-
-A target mass, representing the loss function $L = \text{MSE}(\phi_2, \phi_3)$, moves according to a sine wave. The video illustrates the two main phases of the RHEL process: the **inference phase** and the **echo phase**.
+This demonstration visualizes the Recurrent Hamiltonian Echo Learning (RHEL) algorithm applied to a system of coupled harmonic oscillators, as described in the paper "Learning long range dependencies through time reversal symmetry breaking" by Pourcel & Ernoult (2025).
 
 <video controls preload="metadata" style="width: 100%; max-width: 960px;">
   <source src="/assets/videos/rhel-demo.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
+## Video Visualization Guide
+
+The demonstration consists of three synchronized panels:
+
+### Top Panel: Physical System Animation
+- **Red mass (m₁)**: Connected to left wall via spring k₁
+- **Blue mass (m₂)**: Connected to mass 1 via spring k₁₂ (green) and right wall via spring k₂  
+- **Yellow trajectory (target)**: The desired position φ₃(t) following a sinusoidal pattern
+
+### Middle Panel: Position Trajectories
+- **Solid lines**: Forward trajectory from t = -T to 0 (drawing left to right as time evolves)
+  - Red: φ₁(t) - position of mass 1
+  - Blue: φ₂(t) - position of mass 2  
+  - Yellow: φ₃(t) - target position
+- **Dotted lines**: Echo trajectory from t = 0 to T (overlapped on same plot)
+  - Shows the perturbed backward evolution after momentum reversal
+
+### Bottom Panel: Gradient Accumulator
+Displays the quantity **(φ₂ - φ₁)²** which, when integrated, gives the gradient with respect to the coupling spring k₁₂:
+
+$$\Delta^{\text{RHEL}}_{k_{12}} = -\frac{1}{2\epsilon} \int_0^T \left[(φ_2^e(t,\epsilon) - φ_1^e(t,\epsilon))^2 - (φ_2^e(t,-\epsilon) - φ_1^e(t,-\epsilon))^2\right] dt$$
+
+The difference between the forward and echo phase integrals encodes the gradient information for training the green spring parameter.
+
 ## System Dynamics
 
-The motion of the masses is governed by Newton's second law for a damped mass-spring system. The equations of motion for the two masses are:
+### Hamiltonian
 
-$$
-m_1 \ddot{\phi}_1 + c_1 \dot{\phi}_1 + k_1 \phi_1 + k_2 (\phi_1 - \phi_2) = 0
-$$
-$$
-m_2 \ddot{\phi}_2 + c_2 \dot{\phi}_2 + k_3 \phi_2 + k_2 (\phi_2 - \phi_1) = 0
-$$
+$$H[\Phi, \theta, u] = \sum_{i=1}^{2} \frac{\pi_i^2}{2m_i} + \frac{1}{2}k_1\phi_1^2 + \frac{1}{2}k_{12}(\phi_2 - \phi_1)^2 + \frac{1}{2}k_2\phi_2^2$$
 
-Where:
-- $m_1, m_2$ are the masses.
-- $\phi_1, \phi_2$ are the positions of the masses.
-- $\dot{\phi}_1, \dot{\phi}_2$ are the velocities.
-- $\ddot{\phi}_1, \ddot{\phi}_2$ are the accelerations.
-- $k_1, k_2, k_3$ are the spring constants.
-- $c_1, c_2$ are the damping coefficients.
+### Forward Phase (t ∈ [-T, 0])
+The system evolves according to:
 
-## Video Panel Description
+$$\dot{\phi}_i = \frac{\pi_i}{m_i}, \quad \dot{\pi}_1 = -k_1\phi_1 + k_{12}(\phi_2 - \phi_1), \quad \dot{\pi}_2 = -k_{12}(\phi_2 - \phi_1) - k_2\phi_2$$
 
-The video is split into three panels to visualize the system's dynamics and the learning process:
+### Echo Phase (t ∈ [0, T])  
+After momentum reversal (π → -π), the system evolves backward with nudging:
 
-- **Top Panel: Mechanical System**
-  This panel shows a real-time animation of the masses.
-  - **Mass 1 (Red):** $\phi_1$
-  - **Mass 2 (Blue):** $\phi_2$
-  - **Target Mass (Yellow):** $\phi_3$
+$$\dot{\pi}_2^{\text{echo}} = -k_{12}(\phi_2 - \phi_1) - k_2\phi_2 - \epsilon \nabla_{\phi_2}\mathcal{L}$$
 
-- **Middle Panel: Position Trajectories**
-  This panel plots the positions of the masses over time.
-  - The **inference phase** (time from -T to 0) is shown as a solid line.
-  - The **echo phase** (time from 0 to T) is overlaid as a dotted line, showing how the system retraces its path with the nudging force.
+where the loss $\mathcal{L} = \frac{1}{2}(\phi_2 - \phi_3)^2$ measures the deviation from target.
 
-- **Bottom Panel: Learning Signal**
-  This panel displays the quantity used to update the spring constant $k_2$ (the spring connecting the two masses).
-  - The plot shows $(\phi_2 - \phi_1)^2$, which corresponds to $\nabla_{k_2} H$, the gradient of the system's Hamiltonian with respect to $k_2$.
-  - The learning rule requires integrating this quantity during both the inference and echo phases. The difference between these two integrals provides the update for the spring constant, effectively "training" the green spring.
+## Learning Mechanism
 
-## Phases of the Simulation
+The RHEL algorithm computes parameter gradients through physical trajectory differences:
 
-The simulation is divided into two distinct phases:
+1. **Forward pass**: System evolves naturally (solid lines in middle panel)
+2. **Momentum flip**: At t=0, reverse all momenta
+3. **Echo pass**: Evolve backward with nudging perturbation (dotted lines)
+4. **Gradient extraction**: The gap between echo trajectories with ±ε nudging encodes the gradient
 
-### 1. Inference Phase
-During this phase, the system evolves freely according to the equations of motion described above. The masses oscillate and eventually settle into an equilibrium state, demonstrating the system's natural response.
+The bottom panel shows how the accumulated difference in (φ₂ - φ₁)² between phases directly provides the gradient for updating the coupling spring k₁₂, demonstrating how RHEL performs gradient computation through purely forward-time physical dynamics.
 
-### 2. Echo (Learning) Phase
-Between the inference and echo phases, a crucial step occurs: the velocities of both masses are inverted:
-$$
-\dot{\phi}_1 \rightarrow -\dot{\phi}_1
-$$
-$$
-\dot{\phi}_2 \rightarrow -\dot{\phi}_2
-$$
-In the echo phase, the target mass's trajectory ($\phi_3$) is played backward in time and is physically connected to Mass 2. This "nudging" represents the error signal being propagated back into the system, causing the system to adjust its state. This is analogous to the learning or weight update phase in a neural network.
+## Key Parameters
+
+- Nudging strength: ε = 0.1
+- Time horizon: T = 10  
+- Integration step: δ = 0.01
