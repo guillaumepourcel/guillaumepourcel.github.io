@@ -2,6 +2,7 @@
 layout: page
 title: RHEL demo
 permalink: /rhel-demo/
+nav: true
 ---
 
 ## RHEL Demo Overview
