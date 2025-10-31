@@ -32,11 +32,11 @@ The demonstration consists of three synchronized panels:
   - Shows the perturbed backward evolution after momentum reversal
 
 ### Bottom Panel: Gradient Accumulator
-Displays the quantity **(φ₂ - φ₁)²** which, when integrated, gives the gradient with respect to the coupling spring k₁₂:
+Displays the quantity **(φ₂^echo - φ₁^echo)²** which, when integrated, gives the gradient with respect to the coupling spring k₁₂. The loss is the integrated L² loss between φ₂ and φ₃:
 
-$$\Delta^{\text{RHEL}}_{k_{12}} = -\frac{1}{2\epsilon} \int_0^T \left[(φ_2^e(t,\epsilon) - φ_1^e(t,\epsilon))^2 - (φ_2^e(t,-\epsilon) - φ_1^e(t,-\epsilon))^2\right] dt$$
+$$\Delta^{\text{RHEL}}_{k_{12}} = -\frac{1}{2} \int_0^T \left[(φ_2^{\text{echo}}(t) - φ_1^{\text{echo}}(t))^2\right] dt$$
 
-The difference between the forward and echo phase integrals encodes the gradient information for training the green spring parameter.
+The theoretical result of RHEL is that $\Delta^{\text{RHEL}}_{k_{12}}$ is equal to the gradient of the cost with respect to k₁₂. The difference between the forward and echo phase integrals encodes the gradient information for training the green spring parameter.
 
 ## System Dynamics
 
@@ -52,9 +52,9 @@ $$\dot{\phi}_i = \frac{\pi_i}{m_i}, \quad \dot{\pi}_1 = -k_1\phi_1 + k_{12}(\phi
 ### Echo Phase (t ∈ [0, T])  
 After momentum reversal (π → -π), the system evolves backward with nudging:
 
-$$\dot{\pi}_2^{\text{echo}} = -k_{12}(\phi_2 - \phi_1) - k_2\phi_2 - \epsilon \nabla_{\phi_2}\mathcal{L}$$
+$$\dot{\phi}_i^{\text{echo}} = \frac{\pi_i^{\text{echo}}}{m_i}, \quad \dot{\pi}_1^{\text{echo}} = -k_1\phi_1^{\text{echo}} + k_{12}(\phi_2^{\text{echo}} - \phi_1^{\text{echo}}), \quad \dot{\pi}_2^{\text{echo}} = -k_{12}(\phi_2^{\text{echo}} - \phi_1^{\text{echo}}) - k_2\phi_2^{\text{echo}} - \nabla_{\phi_2^{\text{echo}}}\mathcal{L}$$
 
-where the loss $\mathcal{L} = \frac{1}{2}(\phi_2 - \phi_3)^2$ measures the deviation from target.
+where the loss $$\mathcal{L} = \frac{1}{2}(\phi_2 - \phi_3)^2$$ measures the deviation from target.
 
 ## Learning Mechanism
 
@@ -66,9 +66,3 @@ The RHEL algorithm computes parameter gradients through physical trajectory diff
 4. **Gradient extraction**: The gap between echo trajectories with ±ε nudging encodes the gradient
 
 The bottom panel shows how the accumulated difference in (φ₂ - φ₁)² between phases directly provides the gradient for updating the coupling spring k₁₂, demonstrating how RHEL performs gradient computation through purely forward-time physical dynamics.
-
-## Key Parameters
-
-- Nudging strength: ε = 0.1
-- Time horizon: T = 10  
-- Integration step: δ = 0.01
