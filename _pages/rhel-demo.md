@@ -41,7 +41,7 @@ $$
 The theoretical result of RHEL shows that the difference between the echo and forward phase learning quantities equals the gradient of the cost:
 
 $$
-\Delta^{\text{RHEL}}_{k_{12}} = \lim_{\epsilon \to 0} \frac{1}{\epsilon} \int_0^T \left[(\phi_2^{\text{echo}}(t,\epsilon) - \phi_1^{\text{echo}}(t,\epsilon))^2 - (\phi_2^{\text{echo}}(t,-\epsilon) - \phi_1^{\text{echo}}(t,-\epsilon))^2\right] dt = \nabla_{k_{12}} \mathcal{L}
+\Delta^{\text{RHEL}}_{k_{12}} = \lim_{\epsilon \to 0} \frac{1}{\epsilon} \int_0^T \left[(\phi_2^{\text{echo}}(t,\epsilon) - \phi_1^{\text{echo}}(t,\epsilon))^2 - (\phi_2(-t) - \phi_1^(-t))^2\right] dt = \nabla_{k_{12}} \mathcal{L}
 $$
 
 This difference between the forward and echo phase integrals encodes the gradient information for training the green spring parameter.
