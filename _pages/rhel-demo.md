@@ -1,6 +1,6 @@
 ---
 layout: page
-title: RHEL demo
+title: rhel demo
 permalink: /rhel-demo/
 nav: true
 ---
