@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: wide
 title: rhel interactif
 permalink: /rhel-interactif/
 nav: true
