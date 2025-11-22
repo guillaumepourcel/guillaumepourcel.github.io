@@ -9,6 +9,4 @@ nav: true
 
 This interactive visualization demonstrates coupled harmonic oscillators. You can adjust the initial positions of the masses and observe how the system evolves over time.
 
-<div id="interactive-demo">
-{% include_relative ../assets/html/interactive-copilot.html %}
-</div>
+<iframe src="/assets/html/interactive-copilot.html" width="100%" height="800" frameborder="0" style="border: 1px solid #ccc; border-radius: 8px;"></iframe>
