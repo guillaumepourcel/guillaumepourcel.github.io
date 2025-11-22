@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Coupled Oscillators</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            display: block;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .slider-group label {
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .value-display {
+            color: #666;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Coupled Oscillators</h1>
+        <canvas id="canvas" width="1200" height="600"></canvas>
+        <div class="controls">
+            <div class="slider-group">
+                <label>Mass 1 Initial Position: <span class="value-display" id="x1-value">0.5</span></label>
+                <input type="range" id="x1-slider" min="0" max="4" step="0.1" value="0.5">
+            </div>
+            <div class="slider-group">
+                <label>Mass 2 Initial Position: <span class="value-display" id="x2-value">6.0</span></label>
+                <input type="range" id="x2-slider" min="4" max="8" step="0.1" value="6.0">
+            </div>
+            <div class="button-group">
+                <button id="play-btn">Play</button>
+                <button id="restart-btn">Restart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CoupledOscillators {
+            constructor() {
+                // System parameters
+                this.m1 = 1.0;
+                this.m2 = 1.5;
+                this.m3 = 0.8;
+                this.k1 = 4;
+                this.k2 = 2;
+                this.k3 = 4;
+                this.amp3 = 1.2;
+                this.freq3 = 0.3;
+                this.phase3 = 0;
+                this.omega3 = 2 * Math.PI * this.freq3;
+                
+                // Equilibrium positions
+                this.x1_eq = 2.0;
+                this.x2_eq = 6.0;
+                this.x3_eq = 10.0;
+                this.L0 = 2.0;
+                this.track_y = 0.9;
+                
+                // Animation state
+                this.isPaused = true;
+                this.currentFrame = 0;
+                this.animationId = null;
+                this.fps = 15;
+                this.frameSkip = 2;
+                
+                // Canvas setup
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Scale factors for drawing
+                this.scaleX = 80;  // pixels per unit
+                this.scaleY = 200; // pixels per unit
+                this.offsetX = 50;
+                this.offsetY = 300;
+                
+                // UI elements
+                this.x1Slider = document.getElementById('x1-slider');
+                this.x2Slider = document.getElementById('x2-slider');
+                this.x1Value = document.getElementById('x1-value');
+                this.x2Value = document.getElementById('x2-value');
+                this.playBtn = document.getElementById('play-btn');
+                this.restartBtn = document.getElementById('restart-btn');
+                
+                // Bind events
+                this.x1Slider.addEventListener('input', () => this.onSliderChange());
+                this.x2Slider.addEventListener('input', () => this.onSliderChange());
+                this.playBtn.addEventListener('click', () => this.playPause());
+                this.restartBtn.addEventListener('click', () => this.restart());
+                
+                // Initialize simulation
+                this.updateSimulation();
+                this.drawFrame(0);
+            }
+            
+            mass3Position(t) {
+                return this.x3_eq + this.amp3 * Math.sin(this.omega3 * t + this.phase3);
+            }
+            
+            equationsOfMotion(t, y) {
+                const [x1, v1, x2, v2] = y;
+                const F1 = -this.k1 * (x1 - this.x1_eq) + this.k2 * ((x2 - x1) - this.L0);
+                const F2 = -this.k2 * ((x2 - x1) - this.L0) - this.k3 * (x2 - this.x2_eq);
+                return [v1, F1 / this.m1, v2, F2 / this.m2];
+            }
+            
+            // Simple RK4 integrator
+            rk4Step(t, y, dt) {
+                const k1 = this.equationsOfMotion(t, y);
+                const k2 = this.equationsOfMotion(t + dt/2, y.map((yi, i) => yi + dt/2 * k1[i]));
+                const k3 = this.equationsOfMotion(t + dt/2, y.map((yi, i) => yi + dt/2 * k2[i]));
+                const k4 = this.equationsOfMotion(t + dt, y.map((yi, i) => yi + dt * k3[i]));
+                
+                return y.map((yi, i) => yi + dt/6 * (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]));
+            }
+            
+            solveSystem(T, ic) {
+                const numPoints = 200;
+                const dt = T / numPoints;
+                const t = [];
+                const x1 = [];
+                const x2 = [];
+                
+                let y = [...ic];
+                t.push(0);
+                x1.push(y[0]);
+                x2.push(y[2]);
+                
+                for (let i = 1; i < numPoints; i++) {
+                    const time = i * dt;
+                    y = this.rk4Step(time - dt, y, dt);
+                    t.push(time);
+                    x1.push(y[0]);
+                    x2.push(y[2]);
+                }
+                
+                return { t, x1, x2 };
+            }
+            
+            updateSimulation() {
+                const ic = [
+                    parseFloat(this.x1Slider.value),
+                    0,
+                    parseFloat(this.x2Slider.value),
+                    0
+                ];
+                
+                const T = 15;
+                const sol = this.solveSystem(T, ic);
+                
+                this.t = sol.t;
+                this.x1 = sol.x1;
+                this.x2 = sol.x2;
+                this.x3 = this.t.map(time => this.mass3Position(time));
+                
+                // Calculate errors
+                this.diff = [];
+                this.cumError = [0];
+                
+                for (let i = 0; i < this.t.length; i++) {
+                    const relX3 = this.x3[i] - this.x3_eq;
+                    const relX2 = this.x2[i] - this.x2_eq;
+                    this.diff.push(relX3 - relX2);
+                    
+                    if (i > 0) {
+                        const dt = this.t[i] - this.t[i-1];
+                        const prevCum = this.cumError[i-1];
+                        this.cumError.push(prevCum + this.diff[i] ** 2 * dt);
+                    }
+                }
+                
+                this.maxCumError = Math.max(...this.cumError, 1);
+            }
+            
+            toCanvasX(x) {
+                return this.offsetX + x * this.scaleX;
+            }
+            
+            toCanvasY(y) {
+                return this.offsetY - y * this.scaleY;
+            }
+            
+            drawSpring(x1, x2, y = 0, color = 'black', lineWidth = 3) {
+                const n = 8;
+                const amplitude = 0.1;
+                
+                if (Math.abs(x2 - x1) < 0.1) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.toCanvasX(x1), this.toCanvasY(y));
+                    this.ctx.lineTo(this.toCanvasX(x2), this.toCanvasY(y));
+                    this.ctx.strokeStyle = color;
+                    this.ctx.lineWidth = lineWidth;
+                    this.ctx.stroke();
+                    return;
+                }
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.toCanvasX(x1), this.toCanvasY(y));
+                
+                const segments = n * 3;
+                for (let i = 1; i <= segments; i++) {
+                    const t = i / segments;
+                    const x = x1 + (x2 - x1) * t;
+                    let yOffset = 0;
+                    
+                    const cyclePos = (i % 4);
+                    if (cyclePos === 1) yOffset = amplitude;
+                    else if (cyclePos === 3) yOffset = -amplitude;
+                    
+                    this.ctx.lineTo(this.toCanvasX(x), this.toCanvasY(y + yOffset));
+                }
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.stroke();
+            }
+            
+            drawArrow(x1, y1, x2, y2, color, lineWidth = 4) {
+                const headLen = 0.15;
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const angle = Math.atan2(dy, dx);
+                
+                this.ctx.strokeStyle = color;
+                this.ctx.fillStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                
+                // Line
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.toCanvasX(x1), this.toCanvasY(y1));
+                this.ctx.lineTo(this.toCanvasX(x2), this.toCanvasY(y2));
+                this.ctx.stroke();
+                
+                // Start arrowhead
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.toCanvasX(x1), this.toCanvasY(y1));
+                this.ctx.lineTo(
+                    this.toCanvasX(x1 + headLen * Math.cos(angle + Math.PI - 0.4)),
+                    this.toCanvasY(y1 + headLen * Math.sin(angle + Math.PI - 0.4))
+                );
+                this.ctx.lineTo(
+                    this.toCanvasX(x1 + headLen * Math.cos(angle + Math.PI + 0.4)),
+                    this.toCanvasY(y1 + headLen * Math.sin(angle + Math.PI + 0.4))
+                );
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // End arrowhead
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.toCanvasX(x2), this.toCanvasY(y2));
+                this.ctx.lineTo(
+                    this.toCanvasX(x2 - headLen * Math.cos(angle - 0.4)),
+                    this.toCanvasY(y2 - headLen * Math.sin(angle - 0.4))
+                );
+                this.ctx.lineTo(
+                    this.toCanvasX(x2 - headLen * Math.cos(angle + 0.4)),
+                    this.toCanvasY(y2 - headLen * Math.sin(angle + 0.4))
+                );
+                this.ctx.closePath();
+                this.ctx.fill();
+            }
+            
+            drawFrame(frameIdx) {
+                const i = Math.min(frameIdx, this.t.length - 1);
+                
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw ground
+                this.ctx.fillStyle = 'black';
+                this.ctx.fillRect(this.toCanvasX(-1), this.toCanvasY(-0.4), 
+                                  14 * this.scaleX, 0.3 * this.scaleY);
+                
+                // Draw left wall
+                this.ctx.fillStyle = 'gray';
+                this.ctx.fillRect(this.toCanvasX(-0.5), this.toCanvasY(0), 
+                                  0.3 * this.scaleX, 0.5 * this.scaleY);
+                
+                // Draw right wall
+                this.ctx.fillRect(this.toCanvasX(8.2), this.toCanvasY(0), 
+                                  0.3 * this.scaleX, 0.5 * this.scaleY);
+                
+                // Draw track
+                this.ctx.fillRect(this.toCanvasX(8.5), this.toCanvasY(this.track_y + 0.05), 
+                                  4 * this.scaleX, 0.1 * this.scaleY);
+                
+                // Draw track walls
+                this.ctx.globalAlpha = 0.7;
+                this.ctx.fillRect(this.toCanvasX(9.0), this.toCanvasY(this.track_y + 0.35), 
+                                  0.1 * this.scaleX, 0.6 * this.scaleY);
+                this.ctx.fillRect(this.toCanvasX(11.8), this.toCanvasY(this.track_y + 0.35), 
+                                  0.1 * this.scaleX, 0.6 * this.scaleY);
+                this.ctx.globalAlpha = 1.0;
+                
+                // Draw equilibrium lines
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.strokeStyle = 'blue';
+                this.ctx.lineWidth = 2;
+                this.ctx.globalAlpha = 0.6;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.toCanvasX(this.x2_eq), this.toCanvasY(-0.8));
+                this.ctx.lineTo(this.toCanvasX(this.x2_eq), this.toCanvasY(1.4));
+                this.ctx.stroke();
+                
+                this.ctx.strokeStyle = 'orange';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.toCanvasX(this.x3_eq), this.toCanvasY(-0.8));
+                this.ctx.lineTo(this.toCanvasX(this.x3_eq), this.toCanvasY(1.4));
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+                
+                // Draw springs
+                this.drawSpring(-0.2, this.x1[i], 0, 'black');
+                this.drawSpring(this.x1[i], this.x2[i], 0, 'green');
+                this.drawSpring(this.x2[i], 8.2, 0, 'black');
+                
+                // Draw masses
+                this.ctx.fillStyle = 'red';
+                this.ctx.fillRect(this.toCanvasX(this.x1[i] - 0.2), this.toCanvasY(-0.05), 
+                                  0.4 * this.scaleX, 0.4 * this.scaleY);
+                
+                this.ctx.fillStyle = 'blue';
+                this.ctx.fillRect(this.toCanvasX(this.x2[i] - 0.2), this.toCanvasY(1.15), 
+                                  0.4 * this.scaleX, 1.4 * this.scaleY);
+                
+                this.ctx.fillStyle = 'orange';
+                this.ctx.fillRect(this.toCanvasX(this.x3[i] - 0.075), 
+                                  this.toCanvasY(this.track_y + 0.3), 
+                                  0.15 * this.scaleX, 0.25 * this.scaleY);
+                
+                // Draw arrows
+                const errInst = this.diff[i];
+                this.ctx.globalAlpha = 0.8;
+                this.drawArrow(this.x2[i], 0.55, this.x2[i] + errInst, 0.55, 'purple', 10);
+                
+                const arrowStartX = this.x2[i] + errInst;
+                const fixedLength = this.x3_eq - this.x2_eq;
+                this.ctx.globalAlpha = 0.95;
+                this.drawArrow(arrowStartX, 0.55, arrowStartX + fixedLength, 0.55, 'gold', 4);
+                this.ctx.globalAlpha = 1.0;
+                
+                // Draw status text
+                const cumulativeErr = this.cumError[i];
+                const squaredError = errInst ** 2;
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.strokeStyle = 'black';
+                this.ctx.lineWidth = 1;
+                const textX = 30;
+                const textY = 40;
+                this.ctx.fillRect(textX - 5, textY - 25, 200, 50);
+                this.ctx.strokeRect(textX - 5, textY - 25, 200, 50);
+                
+                this.ctx.fillStyle = 'black';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.fillText(`t = ${this.t[i].toFixed(2)} s`, textX, textY);
+                this.ctx.fillText(`Error² = ${squaredError.toFixed(4)}`, textX, textY + 20);
+                
+                // Draw cumulative error bar
+                const barX = 1050;
+                const barY = 50;
+                const barWidth = 60;
+                const barHeight = 400;
+                
+                this.ctx.fillStyle = '#f0f0f0';
+                this.ctx.fillRect(barX, barY, barWidth, barHeight);
+                this.ctx.strokeStyle = 'black';
+                this.ctx.strokeRect(barX, barY, barWidth, barHeight);
+                
+                const fillHeight = (cumulativeErr / this.maxCumError) * barHeight;
+                this.ctx.fillStyle = 'purple';
+                this.ctx.fillRect(barX, barY + barHeight - fillHeight, barWidth, fillHeight);
+                
+                this.ctx.fillStyle = 'black';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Cumulative', barX + barWidth/2, barY - 20);
+                this.ctx.fillText('Error', barX + barWidth/2, barY - 5);
+                this.ctx.fillText(cumulativeErr.toFixed(4), barX + barWidth/2, barY + barHeight + 20);
+                this.ctx.textAlign = 'left';
+            }
+            
+            animate() {
+                if (!this.isPaused) {
+                    this.currentFrame += this.frameSkip;
+                    
+                    if (this.currentFrame >= this.t.length) {
+                        this.currentFrame = this.t.length - 1;
+                        this.isPaused = true;
+                        this.playBtn.textContent = 'Play';
+                    }
+                    
+                    this.drawFrame(this.currentFrame);
+                    
+                    if (!this.isPaused) {
+                        setTimeout(() => {
+                            this.animationId = requestAnimationFrame(() => this.animate());
+                        }, 1000 / this.fps);
+                    }
+                }
+            }
+            
+            playPause() {
+                if (this.isPaused) {
+                    this.isPaused = false;
+                    this.playBtn.textContent = 'Pause';
+                    this.animate();
+                } else {
+                    this.isPaused = true;
+                    this.playBtn.textContent = 'Play';
+                    if (this.animationId) {
+                        cancelAnimationFrame(this.animationId);
+                    }
+                }
+            }
+            
+            restart() {
+                this.isPaused = true;
+                this.playBtn.textContent = 'Play';
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                this.currentFrame = 0;
+                this.updateSimulation();
+                this.drawFrame(0);
+            }
+            
+            onSliderChange() {
+                this.x1Value.textContent = this.x1Slider.value;
+                this.x2Value.textContent = this.x2Slider.value;
+                
+                if (!this.isPaused) {
+                    this.playPause();
+                }
+                
+                this.updateSimulation();
+                this.currentFrame = 0;
+                this.drawFrame(0);
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            new CoupledOscillators();
+        });
+    </script>
+</body>
+</html>
