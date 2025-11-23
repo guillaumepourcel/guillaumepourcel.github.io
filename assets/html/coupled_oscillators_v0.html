@@ -8,159 +8,211 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 10px;
-            background: #f0f0f0;Inference+Learning
-
-        }
-        
-        .container {
-            background: white;
-            border: 1px solid #ccc;
-            padding: 15px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .title {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .canvas-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        .main-plot {
-            border: 1px solid #000;
-            background: white;
-        }
-        
-        .error-bar-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .error-bar-title {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        #errorBarCanvas {
-            border: 1px solid #000;
-            background: white;
-        }
-        
-        .error-value {
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        
-        .controls {
-            margin-top: 10px;
-        }
-        
-        .slider-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 10px;
-        }
-        
-        .slider-group label {
-            width: 140px;
-            font-size: 12px;
-        }
-        
-        .slider-group input[type="range"] {
-            flex: 1;
-            max-width: 400px;
-        }
-        
-        .slider-group .value {
-            width: 50px;
-            text-align: right;
-            font-size: 12px;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 5px 15px;
-            font-size: 12px;
-            border: 1px solid #666;
+            padding: 20px;
             background: #f0f0f0;
-            cursor: pointer;
+            color: #111;
         }
-        
-        button:hover {
-            background: #e0e0e0;
+
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
-        
-        .status-text {
-            position: absolute;
-            font-size: 14px;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border: 1px solid #ccc;
-        }
-        
-        .error-value {
-            text-align: center;
-        }
-        
-        .mode-toggle {
+
+        .phase-banner {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 4px;
-            margin-left: auto;
-            font-size: 12px;
+            gap: 12px;
+            margin-bottom: 18px;
         }
-        
-        .mode-label-text {
-            color: #888;
+
+        .phase-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .phase-label.inference {
+            background: #1f77b4;
+        }
+
+        .phase-label.flip {
+            background: #ec9a1f;
+        }
+
+        .phase-label.echo {
+            background: #8e44ad;
+        }
+
+        .phase-message {
+            font-size: 13px;
+            color: #333;
             font-weight: 500;
         }
-        
+
+        .canvas-container {
+            display: flex;
+            gap: 0;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+        }
+
+        .main-plot-wrapper {
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 6px 0 0 6px;
+            background: #fff;
+            padding: 8px 8px 0 8px; /* remove bottom padding to eliminate white band */
+        }
+
+        .main-plot {
+            display: block;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .error-bar-box {
+            position: relative;
+            width: 120px;
+            height: 508px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+            background: #fff;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .error-bar-overlay {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 6px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .error-status {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .controls {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .controls-note {
+            font-size: 14px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .controls-note.small {
+            font-size: 12px;
+            font-style: italic;
+            font-weight: normal;
+            color: #444;
+        }
+
+        .control-block {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-left: 8px;
+            border-left: 3px solid #d7d7d7;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+
+        .slider-group {
+            display: grid;
+            grid-template-columns: 280px minmax(220px, 1fr) 55px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .slider-group input[type="range"] {
+            width: 100%;
+            max-width: none;
+        }
+
+        .slider-group .value {
+            width: 55px;
+            text-align: right;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .slider-group.mode-slider {
+            grid-template-columns: 280px minmax(220px, 1fr);
+        }
+
+        .slider-group.mode-slider .mode-switch-row {
+            justify-self: center;
+            width: auto;
+        }
+
+        .mode-label-text {
+            color: #777;
+            font-weight: 500;
+        }
+
         .mode-label-text.active {
             color: #000;
         }
-        
+
         .mode-switch-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 10px;
         }
-        
+
         .switch {
             position: relative;
             display: inline-block;
             width: 62px;
             height: 28px;
         }
-        
+
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-        
+
         .slider {
             position: absolute;
             cursor: pointer;
@@ -172,7 +224,7 @@
             transition: 0.3s;
             border-radius: 14px;
         }
-        
+
         .slider:before {
             position: absolute;
             content: "";
@@ -185,57 +237,107 @@
             border-radius: 50%;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
         }
-        
+
         input:checked + .slider {
             background-color: #4caf50;
         }
-        
+
         input:checked + .slider:before {
             transform: translateX(30px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 6px 16px;
+            font-size: 12px;
+            border: 1px solid #666;
+            border-radius: 4px;
+            background: #f7f7f7;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #eaeaea;
+        }
+
+        .status-text {
+            position: absolute;
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="title" id="phaseIndicator">Interactive Coupled Oscillators - Phase: Inference</div>
+        <div class="phase-banner">
+            <span class="phase-label inference" id="phaseLabel">Inference</span>
+            <span class="phase-message" id="phaseMessage">Adjust the initial positions to minimize the live error.</span>
+        </div>
         
         <div class="canvas-container">
-            <canvas id="mainCanvas" class="main-plot" width="1100" height="500"></canvas>
-            <div class="error-bar-container">
-                <div class="error-bar-title">Cumulative Error</div>
+            <div class="main-plot-wrapper" id="mainCanvasWrapper">
+                <canvas id="mainCanvas" class="main-plot" width="1100" height="500"></canvas>
+            </div>
+            <div class="error-bar-box">
+                <div class="error-bar-overlay">
+                    <div class="error-bar-title">Cumulative Error</div>
+                    <div class="error-value" id="cumulativeErrorValue">0.0000</div>
+                    <div class="error-value error-status" id="errorStatus">Live</div>
+                </div>
                 <canvas id="errorBarCanvas" width="80" height="500"></canvas>
-                <div class="error-value" id="cumulativeErrorValue">0.0000</div>
-                <div class="error-value" id="errorStatus" style="font-size:12px; color:#555;">Live</div>
             </div>
         </div>
         
         <div class="controls">
-            <div class="slider-group">
-                <label>Mass 1 initial x</label>
-                <input type="range" id="x1Slider" min="-1" max="3" step="0.01" value="0.5">
-                <span class="value" id="x1Value">0.50</span>
+            <div class="controls-note">Find the initial positions that minimize the cumulative Error</div>
+            <div class="control-block">
+                <div class="slider-group">
+                    <label>Mass 1 (light blue) position (x)</label>
+                    <input type="range" id="x1Slider" min="-1" max="3" step="0.01" value="0.5">
+                    <span class="value" id="x1Value">0.50</span>
+                </div>
+                
+                <div class="slider-group">
+                    <label>Mass 2 (dark blue) position (x)</label>
+                    <input type="range" id="x2Slider" min="4" max="8" step="0.01" value="6">
+                    <span class="value" id="x2Value">6.00</span>
+                </div>
             </div>
             
-            <div class="slider-group">
-                <label>Mass 2 initial x</label>
-                <input type="range" id="x2Slider" min="4" max="8" step="0.01" value="6">
-                <span class="value" id="x2Value">6.00</span>
+            <div class="controls-note">RHEL parameter</div>
+            <div class="control-block">
+                <div class="slider-group">
+                    <label>Nudging strength (red spring stiffness)</label>
+                    <input type="range" id="nudgingSlider" min="0" max="5" step="0.01" value="0.5">
+                    <span class="value" id="nudgingValue">0.50</span>
+                </div>
+
+                <div class="slider-group mode-slider">
+                    <label>RHEL mode</label>
+                    <div class="mode-switch-row">
+                        <span id="modeLeftText" class="mode-label-text active">Inference only</span>
+                        <label class="switch">
+                            <input type="checkbox" id="modeToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="modeRightText" class="mode-label-text">Inference and Learning</span>
+                    </div>
+                </div>
             </div>
             
             <div class="button-group">
                 <button id="playBtn">Play</button>
                 <button id="restartBtn">Restart</button>
-                <div class="mode-toggle">
-                    <span class="mode-label-text" style="font-weight:bold;">RHEL</span>
-                    <div class="mode-switch-row">
-                        <span id="modeLeftText" class="mode-label-text">Inference only</span>
-                        <label class="switch">
-                            <input type="checkbox" id="modeToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                        <span id="modeRightText" class="mode-label-text active">Inference and Learning</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -265,7 +367,7 @@
                 // Animation state
                 this.isPlaying = false;
                 this.currentPhase = 'inference'; // 'inference', 'flip', 'echo'
-                this.runMode = 'full'; // 'full' or 'inference_only'
+                this.runMode = 'inference_only'; // 'full' or 'inference_only'
                 this.finalCumulativeError = 0;
                 this.animationFrame = null;
                 this.currentFrame = 0;
@@ -277,6 +379,7 @@
                 
                 // Canvas setup
                 this.mainCanvas = document.getElementById('mainCanvas');
+                this.mainCanvasWrapper = document.getElementById('mainCanvasWrapper');
                 this.ctx = this.mainCanvas.getContext('2d');
                 this.errorCanvas = document.getElementById('errorBarCanvas');
                 this.errorCtx = this.errorCanvas.getContext('2d');
@@ -284,23 +387,26 @@
                 // UI elements
                 this.x1Slider = document.getElementById('x1Slider');
                 this.x2Slider = document.getElementById('x2Slider');
+                this.nudgingSlider = document.getElementById('nudgingSlider');
                 this.playBtn = document.getElementById('playBtn');
                 this.restartBtn = document.getElementById('restartBtn');
                 this.modeToggle = document.getElementById('modeToggle');
                 this.modeLeftText = document.getElementById('modeLeftText');
                 this.modeRightText = document.getElementById('modeRightText');
-                this.errorContainer = document.querySelector('.error-bar-container');
+                this.modeToggle.checked = false;
+                this.modeLeftText.classList.add('active');
+                this.modeRightText.classList.remove('active');
                 this.errorValueEl = document.getElementById('cumulativeErrorValue');
                 this.errorStatusEl = document.getElementById('errorStatus');
-                this.phaseIndicator = document.getElementById('phaseIndicator');
+                this.phaseLabel = document.getElementById('phaseLabel');
+                this.phaseMessage = document.getElementById('phaseMessage');
                 
                 // Status text overlay
                 this.statusText = document.createElement('div');
                 this.statusText.className = 'status-text';
-                this.statusText.style.left = '20px';
-                this.statusText.style.top = '20px';
-                this.mainCanvas.parentElement.style.position = 'relative';
-                this.mainCanvas.parentElement.appendChild(this.statusText);
+                this.statusText.style.left = '12px';
+                this.statusText.style.top = '12px';
+                this.mainCanvasWrapper.appendChild(this.statusText);
                 
                 // Set slider ranges
                 this.x1Slider.min = this.x1_eq - 2;
@@ -310,11 +416,42 @@
                 this.x2Slider.min = this.x2_eq - 2;
                 this.x2Slider.max = this.x2_eq + 2;
                 this.x2Slider.value = this.x2_eq;
+                this.nudgingSlider.value = this.kEcho;
                 
+                this.updateInitialPositions();
                 this.setupEventListeners();
                 this.updateSliderDisplays();
+                this.updatePhaseUI(this.currentPhase);
                 this.simulateSystem();
                 this.draw();
+            }
+
+            updateInitialPositions() {
+                this.initialX1 = parseFloat(this.x1Slider.value);
+                this.initialX2 = parseFloat(this.x2Slider.value);
+                this.initialX3 = this.mass3Position(0);
+            }
+
+            updatePhaseUI(phase) {
+                const configs = {
+                    inference: {
+                        label: 'Inference',
+                        message: 'The system runs freely; adjust initial positions to minimize error.'
+                    },
+                    flip: {
+                        label: 'Momentum Flip',
+                        message: 'The system captures a snapshot and flips the momentum (speed).'
+                    },
+                    echo: {
+                        label: 'Echo',
+                        message: 'The target is played backwards with nudging to compute gradients.'
+                    }
+                };
+                const current = configs[phase] || configs.inference;
+                this.phaseLabel.textContent = current.label;
+                this.phaseMessage.textContent = current.message;
+                this.phaseLabel.classList.remove('inference', 'flip', 'echo');
+                this.phaseLabel.classList.add(phase in configs ? phase : 'inference');
             }
             
             setupEventListeners() {
@@ -328,6 +465,12 @@
                     this.restart();
                 });
                 
+                this.nudgingSlider.addEventListener('input', () => {
+                    this.kEcho = parseFloat(this.nudgingSlider.value);
+                    this.updateSliderDisplays();
+                    this.restart();
+                });
+                
                 this.playBtn.addEventListener('click', () => this.togglePlay());
                 this.restartBtn.addEventListener('click', () => this.restart());
                 this.modeToggle.addEventListener('change', () => this.toggleMode());
@@ -336,6 +479,7 @@
             updateSliderDisplays() {
                 document.getElementById('x1Value').textContent = parseFloat(this.x1Slider.value).toFixed(2);
                 document.getElementById('x2Value').textContent = parseFloat(this.x2Slider.value).toFixed(2);
+                document.getElementById('nudgingValue').textContent = parseFloat(this.nudgingSlider.value).toFixed(2);
             }
             
             toggleMode() {
@@ -375,7 +519,8 @@
                 this.currentFrame = 0;
                 this.flipProgress = 0;
                 this.finalCumulativeError = 0;
-                this.phaseIndicator.textContent = 'Interactive Coupled Oscillators - Phase: Inference';
+                this.updatePhaseUI('inference');
+                this.updateInitialPositions();
                 this.simulateSystem();
                 this.draw();
             }
@@ -520,15 +665,17 @@
                 // Coordinate transformation to match matplotlib
                 const width = this.mainCanvas.width;
                 const height = this.mainCanvas.height;
+                const bottomPlotPadding = 30; // reserve space for axis labels
+                const usableHeight = height - bottomPlotPadding;
                 const xMin = -1;
                 const xMax = 13;
                 const yMin = -0.8;
                 const yMax = 1.4;
                 
                 const scaleX = width / (xMax - xMin);
-                const scaleY = height / (yMax - yMin);
+                const scaleY = usableHeight / (yMax - yMin);
                 const offsetX = -xMin * scaleX;
-                const offsetY = height + yMin * scaleY;
+                const offsetY = usableHeight + yMin * scaleY;
                 
                 // Transform functions
                 const toCanvasX = (x) => x * scaleX + offsetX;
@@ -544,7 +691,7 @@
                 for (let x = 0; x <= 12; x += 2) {
                     this.ctx.beginPath();
                     this.ctx.moveTo(toCanvasX(x), 0);
-                    this.ctx.lineTo(toCanvasX(x), height);
+                    this.ctx.lineTo(toCanvasX(x), usableHeight);
                     this.ctx.stroke();
                 }
                 
@@ -558,23 +705,37 @@
                 this.ctx.fillRect(toCanvasX(8.2), toCanvasY(0), toCanvasX(8.5) - toCanvasX(8.2), groundY - toCanvasY(0));
                 
                 // X-axis ticks and labels
-                const axisY = this.mainCanvas.height - 18;
+                const axisY = usableHeight - 4;
                 this.ctx.strokeStyle = '#000';
                 this.ctx.lineWidth = 1;
                 this.ctx.beginPath();
                 this.ctx.moveTo(toCanvasX(xMin), axisY);
                 this.ctx.lineTo(toCanvasX(xMax), axisY);
                 this.ctx.stroke();
-                this.ctx.font = '11px Arial';
+                this.ctx.save();
+                this.ctx.font = '14px Arial';
                 this.ctx.fillStyle = '#000';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'top';
+                const tickLabelY = axisY + 4;
+                const tickLength = 8;
                 for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x += 1) {
                     const cx = toCanvasX(x);
                     this.ctx.beginPath();
-                    this.ctx.moveTo(cx, axisY - 4);
-                    this.ctx.lineTo(cx, axisY + 4);
+                    this.ctx.moveTo(cx, axisY - tickLength / 2);
+                    this.ctx.lineTo(cx, axisY + tickLength / 2);
                     this.ctx.stroke();
-                    this.ctx.fillText(x.toString(), cx - 4, axisY + 16);
+                    this.ctx.fillText(x.toString(), cx, tickLabelY);
                 }
+                this.ctx.font = '13px Arial';
+                this.ctx.textBaseline = 'top';
+                const axisLabelY = height - 16;
+                this.ctx.fillText('Position', width / 2, axisLabelY);
+                this.ctx.restore();
+
+                // Initial position markers on the axis
+                this.drawInitialMarker(toCanvasX(this.initialX1), axisY, '#4682b4');
+                this.drawInitialMarker(toCanvasX(this.initialX2), axisY, '#00008b');
                 
                 // Draw equilibrium lines
                 this.ctx.strokeStyle = 'rgba(0, 0, 139, 0.6)';
@@ -594,10 +755,10 @@
                 
                 // Add labels for equilibrium lines
                 this.ctx.font = '12px Arial';
-                this.ctx.fillStyle = 'rgba(0, 0, 139, 0.8)';
-                this.ctx.fillText('x₂,eq', toCanvasX(this.x2_eq) - 15, toCanvasY(1.35));
-                this.ctx.fillStyle = 'rgba(0, 128, 0, 0.8)';
-                this.ctx.fillText('x₃,eq', toCanvasX(this.x3_eq) - 15, toCanvasY(1.35));
+                // this.ctx.fillStyle = 'rgba(0, 0, 139, 0.8)';
+                // this.ctx.fillText('x₂,eq', toCanvasX(this.x2_eq) - 15, toCanvasY(1.35));
+                // this.ctx.fillStyle = 'rgba(0, 128, 0, 0.8)';
+                // this.ctx.fillText('x₃,eq', toCanvasX(this.x3_eq) - 15, toCanvasY(1.35));
                 
                 // Get current positions
                 const frame = Math.min(this.currentFrame, this.x1.length - 1);
@@ -635,8 +796,15 @@
                     this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
                     this.ctx.setLineDash([5, 3]);
                     const echoSpringY = toCanvasY(0.3); // echo_spring_y = 0.3 in Python
-                    this.drawSpring(toCanvasX(x2Pos), toCanvasX(x3Pos), echoSpringY, 2);
+                    const echoWidth = Math.max(1.5, this.kEcho * 1.5);
+                    this.drawSpring(toCanvasX(x2Pos), toCanvasX(x3Pos), echoSpringY, echoWidth);
                     this.ctx.setLineDash([]);
+                    this.ctx.save();
+                    this.ctx.font = '14px Arial';
+                    this.ctx.fillStyle = '#ff0000';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('Nudging', toCanvasX((x2Pos + x3Pos) / 2), echoSpringY - 35);
+                    this.ctx.restore();
                 }
                 
                 // Draw masses as rectangles on the track
@@ -682,7 +850,11 @@
                 
                 // Caption for error arrow
                 this.ctx.font = '12px Arial';
-                this.ctx.fillText('Red arrow length = error', toCanvasX(x2Pos) - 40, errorArrowY - 12);
+                this.ctx.save();
+                this.ctx.textAlign = 'center';
+                const errorMidpoint = toCanvasX(x2Pos + error / 2);
+                this.ctx.fillText('Error', errorMidpoint, errorArrowY - 12);
+                this.ctx.restore();
                 
                 // Draw fixed arrow (dotted red)
                 const fixedStart = x2Pos + error;
@@ -712,13 +884,30 @@
                 
                 // Update status text overlay
                 const timeStr = `t = ${(this.t[frame] || 0).toFixed(2)} s`;
-                const errorStr = `Error² (red arrow): ${(error * error).toFixed(4)}`;
+                const errorStr = `Error²: ${(error * error).toFixed(4)}`;
                 this.statusText.innerHTML = timeStr + '<br>' + errorStr;
                 
-                // Draw axis labels
-                this.ctx.fillStyle = '#000';
-                this.ctx.font = '12px Arial';
-                this.ctx.fillText('Position', width/2 - 20, height - 5);
+            }
+
+            drawInitialMarker(x, axisY, color) {
+                const ctx = this.ctx;
+                const arrowHeight = 30;
+                const headSize = 7;
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x, axisY);
+                ctx.lineTo(x, axisY - arrowHeight);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, axisY - arrowHeight - headSize);
+                ctx.lineTo(x - headSize, axisY - arrowHeight);
+                ctx.lineTo(x + headSize, axisY - arrowHeight);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
             }
             
             drawArrowHead(x, y, angle, length) {
@@ -824,7 +1013,7 @@
                         this.flipProgress += 0.02;
                         if (this.flipProgress >= 1) {
                             this.currentPhase = 'echo';
-                            this.phaseIndicator.textContent = 'Interactive Coupled Oscillators - Phase: Echo';
+                            this.updatePhaseUI('echo');
                             this.simulateSystem();
                             this.currentFrame = 0;
                         }
@@ -842,7 +1031,7 @@
                                 
                                 this.finalCumulativeError = this.cumulativeError[this.cumulativeError.length - 1] || 0;
                                 this.currentPhase = 'flip';
-                                this.phaseIndicator.textContent = 'Interactive Coupled Oscillators - Phase: Momentum Flip';
+                                this.updatePhaseUI('flip');
                                 this.flipProgress = 0;
                             } else {
                                 this.finalCumulativeError = this.cumulativeError[this.cumulativeError.length - 1] || 0;
