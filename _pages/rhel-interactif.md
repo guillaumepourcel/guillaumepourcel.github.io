@@ -14,7 +14,7 @@ This interactive visualization demonstrates coupled harmonic oscillators. You ca
     width: 100%;
     margin: 20px 0;
     position: relative;
-    overflow: auto;
+    overflow: hidden;
 }
 
 #responsive-iframe {
@@ -26,7 +26,7 @@ This interactive visualization demonstrates coupled harmonic oscillators. You ca
 </style>
 
 <div id="iframe-container">
-<iframe id="responsive-iframe" src="/assets/html/coupled_oscillators_v0.html" width="1500" height="1100"></iframe>
+<iframe id="responsive-iframe" src="/assets/html/coupled_oscillators_v0.html" width="1500" height="1100" scrolling="no"></iframe>
 </div>
 
 <script>
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalHeight = 1100;
         
         // Calculate scale to fit container width
-        const scale = containerWidth / originalWidth;
+        const scale = Math.min(containerWidth / originalWidth, 1);
         
         // Apply scale transform
         iframe.style.transform = `scale(${scale})`;
@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Adjust container height to match scaled content
         container.style.height = (originalHeight * scale) + 'px';
+        container.style.width = (originalWidth * scale) + 'px';
     }
     
     setTimeout(resizeIframe, 100);
