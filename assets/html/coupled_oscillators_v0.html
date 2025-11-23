@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Coupled Oscillators</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #f0f0f0;Inference+Learning
+
+        }
+        
+        .container {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .canvas-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .main-plot {
+            border: 1px solid #000;
+            background: white;
+        }
+        
+        .error-bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .error-bar-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        #errorBarCanvas {
+            border: 1px solid #000;
+            background: white;
+        }
+        
+        .error-value {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .controls {
+            margin-top: 10px;
+        }
+        
+        .slider-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        
+        .slider-group label {
+            width: 140px;
+            font-size: 12px;
+        }
+        
+        .slider-group input[type="range"] {
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .slider-group .value {
+            width: 50px;
+            text-align: right;
+            font-size: 12px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 5px 15px;
+            font-size: 12px;
+            border: 1px solid #666;
+            background: #f0f0f0;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #e0e0e0;
+        }
+        
+        .status-text {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+        
+        .error-value {
+            text-align: center;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+            font-size: 12px;
+        }
+        
+        .mode-label-text {
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .mode-label-text.active {
+            color: #000;
+        }
+        
+        .mode-switch-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 62px;
+            height: 28px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #aaa;
+            transition: 0.3s;
+            border-radius: 14px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        input:checked + .slider {
+            background-color: #4caf50;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title" id="phaseIndicator">Interactive Coupled Oscillators - Phase: Inference</div>
+        
+        <div class="canvas-container">
+            <canvas id="mainCanvas" class="main-plot" width="1100" height="500"></canvas>
+            <div class="error-bar-container">
+                <div class="error-bar-title">Cumulative Error</div>
+                <canvas id="errorBarCanvas" width="80" height="500"></canvas>
+                <div class="error-value" id="cumulativeErrorValue">0.0000</div>
+                <div class="error-value" id="errorStatus" style="font-size:12px; color:#555;">Live</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="slider-group">
+                <label>Mass 1 initial x</label>
+                <input type="range" id="x1Slider" min="-1" max="3" step="0.01" value="0.5">
+                <span class="value" id="x1Value">0.50</span>
+            </div>
+            
+            <div class="slider-group">
+                <label>Mass 2 initial x</label>
+                <input type="range" id="x2Slider" min="4" max="8" step="0.01" value="6">
+                <span class="value" id="x2Value">6.00</span>
+            </div>
+            
+            <div class="button-group">
+                <button id="playBtn">Play</button>
+                <button id="restartBtn">Restart</button>
+                <div class="mode-toggle">
+                    <span class="mode-label-text" style="font-weight:bold;">RHEL</span>
+                    <div class="mode-switch-row">
+                        <span id="modeLeftText" class="mode-label-text">Inference only</span>
+                        <label class="switch">
+                            <input type="checkbox" id="modeToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <span id="modeRightText" class="mode-label-text active">Inference and Learning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CoupledOscillators {
+            constructor() {
+                // System parameters
+                this.m1 = 1.0;
+                this.m2 = 1.5;
+                this.m3 = 0.8;
+                this.k1 = 0.4;
+                this.k2 = 0.2;
+                this.k3 = 0.4;
+                this.kEcho = 0.5;
+                this.amp3 = 1.2;
+                this.omega3 = 2 * Math.PI * 0.1; // freq = 0.1 Hz
+                this.phase3 = 0;
+                
+                // Equilibrium positions
+                this.x1_eq = 2.0;
+                this.x2_eq = 6.0;
+                this.x3_eq = 10.0;
+                this.L0 = 2.0;
+                this.echoL0 = this.x3_eq - this.x2_eq;
+                
+                // Animation state
+                this.isPlaying = false;
+                this.currentPhase = 'inference'; // 'inference', 'flip', 'echo'
+                this.runMode = 'full'; // 'full' or 'inference_only'
+                this.finalCumulativeError = 0;
+                this.animationFrame = null;
+                this.currentFrame = 0;
+                this.flipProgress = 0;
+                this.lastFrameTime = 0;
+                this.fps = 15; // Match Python fps
+                this.frameInterval = 1000 / this.fps;
+                this.simulationTime = 5; // 5 seconds simulation
+                
+                // Canvas setup
+                this.mainCanvas = document.getElementById('mainCanvas');
+                this.ctx = this.mainCanvas.getContext('2d');
+                this.errorCanvas = document.getElementById('errorBarCanvas');
+                this.errorCtx = this.errorCanvas.getContext('2d');
+                
+                // UI elements
+                this.x1Slider = document.getElementById('x1Slider');
+                this.x2Slider = document.getElementById('x2Slider');
+                this.playBtn = document.getElementById('playBtn');
+                this.restartBtn = document.getElementById('restartBtn');
+                this.modeToggle = document.getElementById('modeToggle');
+                this.modeLeftText = document.getElementById('modeLeftText');
+                this.modeRightText = document.getElementById('modeRightText');
+                this.errorContainer = document.querySelector('.error-bar-container');
+                this.errorValueEl = document.getElementById('cumulativeErrorValue');
+                this.errorStatusEl = document.getElementById('errorStatus');
+                this.phaseIndicator = document.getElementById('phaseIndicator');
+                
+                // Status text overlay
+                this.statusText = document.createElement('div');
+                this.statusText.className = 'status-text';
+                this.statusText.style.left = '20px';
+                this.statusText.style.top = '20px';
+                this.mainCanvas.parentElement.style.position = 'relative';
+                this.mainCanvas.parentElement.appendChild(this.statusText);
+                
+                // Set slider ranges
+                this.x1Slider.min = this.x1_eq - 2;
+                this.x1Slider.max = this.x1_eq + 2;
+                this.x1Slider.value = this.x1_eq - 1.5;
+                
+                this.x2Slider.min = this.x2_eq - 2;
+                this.x2Slider.max = this.x2_eq + 2;
+                this.x2Slider.value = this.x2_eq;
+                
+                this.setupEventListeners();
+                this.updateSliderDisplays();
+                this.simulateSystem();
+                this.draw();
+            }
+            
+            setupEventListeners() {
+                this.x1Slider.addEventListener('input', () => {
+                    this.updateSliderDisplays();
+                    this.restart();
+                });
+                
+                this.x2Slider.addEventListener('input', () => {
+                    this.updateSliderDisplays();
+                    this.restart();
+                });
+                
+                this.playBtn.addEventListener('click', () => this.togglePlay());
+                this.restartBtn.addEventListener('click', () => this.restart());
+                this.modeToggle.addEventListener('change', () => this.toggleMode());
+            }
+            
+            updateSliderDisplays() {
+                document.getElementById('x1Value').textContent = parseFloat(this.x1Slider.value).toFixed(2);
+                document.getElementById('x2Value').textContent = parseFloat(this.x2Slider.value).toFixed(2);
+            }
+            
+            toggleMode() {
+                this.runMode = this.modeToggle.checked ? 'full' : 'inference_only';
+                const isFull = this.runMode === 'full';
+                this.modeLeftText.classList.toggle('active', !isFull);
+                this.modeRightText.classList.toggle('active', isFull);
+                this.restart();
+            }
+            
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+            
+            play() {
+                this.isPlaying = true;
+                this.playBtn.textContent = 'Pause';
+                this.lastFrameTime = performance.now();
+                this.animate();
+            }
+            
+            pause() {
+                this.isPlaying = false;
+                this.playBtn.textContent = 'Play';
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+            }
+            
+            restart() {
+                this.pause();
+                this.currentPhase = 'inference';
+                this.currentFrame = 0;
+                this.flipProgress = 0;
+                this.finalCumulativeError = 0;
+                this.phaseIndicator.textContent = 'Interactive Coupled Oscillators - Phase: Inference';
+                this.simulateSystem();
+                this.draw();
+            }
+            
+            mass3Position(t) {
+                return this.x3_eq + this.amp3 * Math.sin(this.omega3 * t + this.phase3);
+            }
+            
+            rungeKutta4(y, t, dt) {
+                // RK4 integration for the coupled oscillator system
+                const dydt = (state, time) => {
+                    const [x1, v1, x2, v2] = state;
+                    const x3 = (this.currentPhase === 'echo')
+                        ? this.mass3Position(this.simulationTime - time)
+                        : this.mass3Position(time);
+                    const F1 = -this.k1 * (x1 - this.x1_eq) + this.k2 * ((x2 - x1) - this.L0);
+                    const coupling = (this.currentPhase === 'echo') ? this.kEcho : 0;
+                    const F2 = -this.k2 * ((x2 - x1) - this.L0)
+                               - this.k3 * (x2 - this.x2_eq)
+                               + coupling * ((x3 - x2) - this.echoL0);
+                    return [v1, F1 / this.m1, v2, F2 / this.m2];
+                };
+                
+                const k1 = dydt(y, t);
+                const y2 = y.map((v, i) => v + 0.5 * dt * k1[i]);
+                const k2 = dydt(y2, t + 0.5 * dt);
+                const y3 = y.map((v, i) => v + 0.5 * dt * k2[i]);
+                const k3 = dydt(y3, t + 0.5 * dt);
+                const y4 = y.map((v, i) => v + dt * k3[i]);
+                const k4 = dydt(y4, t + dt);
+                
+                return y.map((v, i) => v + dt * (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]) / 6);
+            }
+            
+            simulateSystem() {
+                const T = this.simulationTime;
+                const nPoints = Math.floor(T * this.fps); // Points based on fps for real-time
+                const dt = T / nPoints;
+                
+                this.t = [];
+                this.x1 = [];
+                this.x2 = [];
+                this.v1 = [];
+                this.v2 = [];
+                this.x3 = [];
+                
+                let y;
+                if (this.currentPhase === 'inference') {
+                    y = [parseFloat(this.x1Slider.value), 0, parseFloat(this.x2Slider.value), 0];
+                } else if (this.currentPhase === 'echo') {
+                    // Use stored final state with flipped velocities
+                    y = [this.finalX1, -this.finalV1, this.finalX2, -this.finalV2];
+                } else {
+                    y = [parseFloat(this.x1Slider.value), 0, parseFloat(this.x2Slider.value), 0];
+                }
+                
+                for (let i = 0; i <= nPoints; i++) {
+                    const t = i * dt;
+                    this.t.push(t);
+                    this.x1.push(y[0]);
+                    this.v1.push(y[1]);
+                    this.x2.push(y[2]);
+                    this.v2.push(y[3]);
+                    
+                    if (this.currentPhase === 'echo') {
+                        // Reverse time for echo phase
+                        this.x3.push(this.mass3Position(T - t));
+                    } else {
+                        this.x3.push(this.mass3Position(t));
+                    }
+                    
+                    if (i < nPoints) {
+                        y = this.rungeKutta4(y, t, dt);
+                    }
+                }
+                
+                // Calculate errors
+                this.errors = [];
+                this.cumulativeError = [];
+                let cumError = 0;
+                
+                for (let i = 0; i < this.x2.length; i++) {
+                    const relX2 = this.x2[i] - this.x2_eq;
+                    const relX3 = this.x3[i] - this.x3_eq;
+                    const diff = relX3 - relX2;
+                    this.errors.push(diff);
+                    cumError += diff * diff * dt;
+                    this.cumulativeError.push(cumError);
+                }
+            }
+            
+            drawSpring(x1, x2, y, width = 3, coils = 8) {
+                const ctx = this.ctx;
+                const length = x2 - x1;
+                
+                if (Math.abs(length) < 10) {
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y);
+                    ctx.lineTo(x2, y);
+                    ctx.lineWidth = width;
+                    ctx.stroke();
+                    return;
+                }
+                
+                const points = coils * 4;
+                const step = length / points;
+                const amplitude = 25; // Bigger amplitude for more visible springs
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y);
+                
+                for (let i = 0; i <= points; i++) {
+                    const x = x1 + i * step;
+                    const phase = i % 4;
+                    let yOffset = 0;
+                    
+                    if (phase === 1) {
+                        yOffset = -amplitude;
+                    } else if (phase === 3) {
+                        yOffset = amplitude;
+                    }
+                    
+                    if (i === 0 || i === points) {
+                        yOffset = 0; // Start and end at center
+                    }
+                    
+                    ctx.lineTo(x, y + yOffset);
+                }
+                
+                ctx.lineWidth = width;
+                ctx.stroke();
+            }
+            
+            draw() {
+                // Clear canvases
+                this.ctx.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
+                this.errorCtx.clearRect(0, 0, this.errorCanvas.width, this.errorCanvas.height);
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.errorCtx.lineCap = 'round';
+                
+                // Coordinate transformation to match matplotlib
+                const width = this.mainCanvas.width;
+                const height = this.mainCanvas.height;
+                const xMin = -1;
+                const xMax = 13;
+                const yMin = -0.8;
+                const yMax = 1.4;
+                
+                const scaleX = width / (xMax - xMin);
+                const scaleY = height / (yMax - yMin);
+                const offsetX = -xMin * scaleX;
+                const offsetY = height + yMin * scaleY;
+                
+                // Transform functions
+                const toCanvasX = (x) => x * scaleX + offsetX;
+                const toCanvasY = (y) => offsetY - y * scaleY;
+                
+                // Track position (y=0 in matplotlib corresponds to the track)
+                const trackY = toCanvasY(0.9); // Matches Python track_y = 0.9
+                const groundY = toCanvasY(-0.25);
+                
+                // Draw grid
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.lineWidth = 0.5;
+                for (let x = 0; x <= 12; x += 2) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(toCanvasX(x), 0);
+                    this.ctx.lineTo(toCanvasX(x), height);
+                    this.ctx.stroke();
+                }
+                
+                // Draw ground
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(toCanvasX(-1), groundY, toCanvasX(14) - toCanvasX(-1), toCanvasY(-0.55) - groundY);
+                
+                // Draw walls
+                this.ctx.fillStyle = '#808080';
+                this.ctx.fillRect(toCanvasX(-0.5), toCanvasY(0), toCanvasX(-0.2) - toCanvasX(-0.5), groundY - toCanvasY(0));
+                this.ctx.fillRect(toCanvasX(8.2), toCanvasY(0), toCanvasX(8.5) - toCanvasX(8.2), groundY - toCanvasY(0));
+                
+                // X-axis ticks and labels
+                const axisY = this.mainCanvas.height - 18;
+                this.ctx.strokeStyle = '#000';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.moveTo(toCanvasX(xMin), axisY);
+                this.ctx.lineTo(toCanvasX(xMax), axisY);
+                this.ctx.stroke();
+                this.ctx.font = '11px Arial';
+                this.ctx.fillStyle = '#000';
+                for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x += 1) {
+                    const cx = toCanvasX(x);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(cx, axisY - 4);
+                    this.ctx.lineTo(cx, axisY + 4);
+                    this.ctx.stroke();
+                    this.ctx.fillText(x.toString(), cx - 4, axisY + 16);
+                }
+                
+                // Draw equilibrium lines
+                this.ctx.strokeStyle = 'rgba(0, 0, 139, 0.6)';
+                this.ctx.lineWidth = 2;
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.beginPath();
+                this.ctx.moveTo(toCanvasX(this.x2_eq), toCanvasY(1.3));
+                this.ctx.lineTo(toCanvasX(this.x2_eq), toCanvasY(-0.5));
+                this.ctx.stroke();
+                
+                this.ctx.strokeStyle = 'rgba(0, 128, 0, 0.6)';
+                this.ctx.beginPath();
+                this.ctx.moveTo(toCanvasX(this.x3_eq), toCanvasY(1.3));
+                this.ctx.lineTo(toCanvasX(this.x3_eq), toCanvasY(-0.5));
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                
+                // Add labels for equilibrium lines
+                this.ctx.font = '12px Arial';
+                this.ctx.fillStyle = 'rgba(0, 0, 139, 0.8)';
+                this.ctx.fillText('x₂,eq', toCanvasX(this.x2_eq) - 15, toCanvasY(1.35));
+                this.ctx.fillStyle = 'rgba(0, 128, 0, 0.8)';
+                this.ctx.fillText('x₃,eq', toCanvasX(this.x3_eq) - 15, toCanvasY(1.35));
+                
+                // Get current positions
+                const frame = Math.min(this.currentFrame, this.x1.length - 1);
+                let x1Pos, x2Pos, x3Pos, v1Vel, v2Vel;
+                
+                if (this.currentPhase === 'flip') {
+                    // During flip, use final positions
+                    x1Pos = this.finalX1;
+                    x2Pos = this.finalX2;
+                    x3Pos = this.x3[this.x3.length - 1];
+                    
+                    // Rotate velocities for visual effect
+                    const angle = this.flipProgress * Math.PI;
+                    v1Vel = this.finalV1 * Math.cos(angle);
+                    v2Vel = this.finalV2 * Math.cos(angle);
+                } else {
+                    x1Pos = this.x1[frame];
+                    x2Pos = this.x2[frame];
+                    x3Pos = this.x3[frame];
+                    v1Vel = this.v1[frame];
+                    v2Vel = this.v2[frame];
+                }
+                
+                // Draw springs at y=0 in plot coordinates (matching Python)
+                const springY = toCanvasY(0); // y=0 in plot coordinates
+                this.ctx.strokeStyle = '#000';
+                
+                // Spring connections match Python: wall to mass1, mass1 to mass2, mass2 to wall
+                this.drawSpring(toCanvasX(-0.2), toCanvasX(x1Pos), springY, Math.max(2, this.k1 * 8));
+                this.drawSpring(toCanvasX(x1Pos), toCanvasX(x2Pos), springY, Math.max(2, this.k2 * 8));
+                this.drawSpring(toCanvasX(x2Pos), toCanvasX(8.2), springY, Math.max(2, this.k3 * 8));
+                
+                // Draw echo spring if in echo phase (at different height)
+                if (this.currentPhase === 'echo') {
+                    this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+                    this.ctx.setLineDash([5, 3]);
+                    const echoSpringY = toCanvasY(0.3); // echo_spring_y = 0.3 in Python
+                    this.drawSpring(toCanvasX(x2Pos), toCanvasX(x3Pos), echoSpringY, 2);
+                    this.ctx.setLineDash([]);
+                }
+                
+                // Draw masses as rectangles on the track
+                const massWidth = 0.4 * scaleX;
+                const massHeight = 1.2 * scaleY;
+                const massY = groundY; // All masses at same height
+                
+                // Mass 1 (steelblue)
+                this.ctx.fillStyle = '#4682b4';
+                this.ctx.fillRect(toCanvasX(x1Pos) - massWidth/2, massY - massHeight, massWidth, massHeight);
+                
+                // Mass 2 (darkblue)
+                this.ctx.fillStyle = '#00008b';
+                this.ctx.fillRect(toCanvasX(x2Pos) - massWidth/2, massY - massHeight, massWidth, massHeight);
+                
+                // Mass 3 (green)
+                this.ctx.fillStyle = '#008000';
+                this.ctx.fillRect(toCanvasX(x3Pos) - massWidth/2, massY - massHeight, massWidth, massHeight);
+                
+                // Draw velocity arrows above masses
+                const arrowY = toCanvasY(1.0);
+                this.ctx.lineWidth = 3;
+                
+                // Velocity arrow for mass 1
+                this.ctx.strokeStyle = '#4682b4';
+                this.ctx.fillStyle = '#4682b4';
+                this.drawArrow(toCanvasX(x1Pos), arrowY, toCanvasX(x1Pos) + v1Vel * 50, arrowY);
+                
+                // Velocity arrow for mass 2
+                this.ctx.strokeStyle = '#00008b';
+                this.ctx.fillStyle = '#00008b';
+                this.drawArrow(toCanvasX(x2Pos), arrowY, toCanvasX(x2Pos) + v2Vel * 50, arrowY);
+                
+                // Draw error arrow (red double arrow)
+                const error = this.errors[frame] || 0;
+                const errorArrowY = toCanvasY(0.75);
+                this.ctx.strokeStyle = '#ff0000';
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.lineWidth = 7.5;
+                this.ctx.globalAlpha = 0.8;
+                this.drawDoubleArrow(toCanvasX(x2Pos), errorArrowY, toCanvasX(x2Pos + error), errorArrowY);
+                this.ctx.globalAlpha = 1.0;
+                
+                // Caption for error arrow
+                this.ctx.font = '12px Arial';
+                this.ctx.fillText('Red arrow length = error', toCanvasX(x2Pos) - 40, errorArrowY - 12);
+                
+                // Draw fixed arrow (dotted red)
+                const fixedStart = x2Pos + error;
+                const fixedLength = this.x3_eq - this.x2_eq;
+                this.ctx.strokeStyle = '#ff0000';
+                this.ctx.lineWidth = 4;
+                this.ctx.globalAlpha = 0.95;
+                this.ctx.setLineDash([5, 5]);
+                this.drawFixedArrow(toCanvasX(fixedStart), errorArrowY, toCanvasX(fixedStart + fixedLength), errorArrowY);
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+                
+                // Draw error bar
+                const cumError = this.cumulativeError[frame] || 0;
+                if (this.currentPhase === 'inference') {
+                    this.finalCumulativeError = cumError;
+                }
+                const maxBarValue = 50;
+                const showLive = this.currentPhase === 'inference';
+                const displayError = showLive ? cumError : this.finalCumulativeError;
+                const clamped = Math.max(0, Math.min(displayError, maxBarValue));
+                const barHeight = (clamped / maxBarValue) * (this.errorCanvas.height - 40);
+                this.errorCtx.fillStyle = '#ff0000';
+                this.errorCtx.fillRect(10, this.errorCanvas.height - barHeight - 20, 60, barHeight);
+                this.errorValueEl.textContent = displayError.toFixed(4);
+                this.errorStatusEl.textContent = showLive ? 'Live' : 'Final score';
+                
+                // Update status text overlay
+                const timeStr = `t = ${(this.t[frame] || 0).toFixed(2)} s`;
+                const errorStr = `Error² (red arrow): ${(error * error).toFixed(4)}`;
+                this.statusText.innerHTML = timeStr + '<br>' + errorStr;
+                
+                // Draw axis labels
+                this.ctx.fillStyle = '#000';
+                this.ctx.font = '12px Arial';
+                this.ctx.fillText('Position', width/2 - 20, height - 5);
+            }
+            
+            drawArrowHead(x, y, angle, length) {
+                const ctx = this.ctx;
+                const halfWidth = Math.max(6, length * 0.6);
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(-length, -halfWidth);
+                ctx.lineTo(-length, halfWidth);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+            
+            drawArrow(x1, y1, x2, y2) {
+                const ctx = this.ctx;
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                
+                // Don't draw if too short
+                if (length < 5) return;
+                
+                const headLength = Math.max(8, Math.min(14, length * 0.25));
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                
+                const lineEndX = x2 - Math.cos(angle) * headLength * 0.7;
+                const lineEndY = y2 - Math.sin(angle) * headLength * 0.7;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(lineEndX, lineEndY);
+                ctx.stroke();
+                
+                this.drawArrowHead(x2, y2, angle, headLength);
+            }
+            
+            drawDoubleArrow(x1, y1, x2, y2) {
+                const ctx = this.ctx;
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                
+                // Don't draw if too short - just draw a dot
+                if (length < 5) {
+                    ctx.beginPath();
+                    ctx.arc((x1 + x2) / 2, (y1 + y2) / 2, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                    return;
+                }
+                
+                const headLength = Math.max(10, Math.min(16, length * 0.2));
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                
+                const lineStartX = x1 + Math.cos(angle) * headLength * 0.7;
+                const lineStartY = y1 + Math.sin(angle) * headLength * 0.7;
+                const lineEndX = x2 - Math.cos(angle) * headLength * 0.7;
+                const lineEndY = y2 - Math.sin(angle) * headLength * 0.7;
+                
+                ctx.beginPath();
+                ctx.moveTo(lineStartX, lineStartY);
+                ctx.lineTo(lineEndX, lineEndY);
+                ctx.stroke();
+                
+                this.drawArrowHead(x2, y2, angle, headLength);
+                this.drawArrowHead(x1, y1, angle + Math.PI, headLength);
+            }
+            
+            drawFixedArrow(x1, y1, x2, y2) {
+                const ctx = this.ctx;
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                
+                // Don't draw if too short
+                if (length < 5) return;
+                
+                // Main horizontal line
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                
+                // Vertical end caps (like |----|)
+                const capHeight = 12;
+                ctx.beginPath();
+                // Left cap
+                ctx.moveTo(x1, y1 - capHeight/2);
+                ctx.lineTo(x1, y1 + capHeight/2);
+                // Right cap
+                ctx.moveTo(x2, y2 - capHeight/2);
+                ctx.lineTo(x2, y2 + capHeight/2);
+                ctx.stroke();
+            }
+            
+            animate(currentTime) {
+                if (!this.isPlaying) return;
+                
+                // Control frame rate for real-time playback
+                if (!currentTime) currentTime = performance.now();
+                const deltaTime = currentTime - this.lastFrameTime;
+                
+                if (deltaTime >= this.frameInterval) {
+                    if (this.currentPhase === 'flip') {
+                        // Handle flip animation
+                        this.flipProgress += 0.02;
+                        if (this.flipProgress >= 1) {
+                            this.currentPhase = 'echo';
+                            this.phaseIndicator.textContent = 'Interactive Coupled Oscillators - Phase: Echo';
+                            this.simulateSystem();
+                            this.currentFrame = 0;
+                        }
+                    } else {
+                        // Normal animation
+                        this.currentFrame++;
+                        
+                        if (this.currentFrame >= this.x1.length) {
+                            if (this.currentPhase === 'inference' && this.runMode === 'full') {
+                                // Store final state and start flip
+                                this.finalX1 = this.x1[this.x1.length - 1];
+                                this.finalV1 = this.v1[this.v1.length - 1];
+                                this.finalX2 = this.x2[this.x2.length - 1];
+                                this.finalV2 = this.v2[this.v2.length - 1];
+                                
+                                this.finalCumulativeError = this.cumulativeError[this.cumulativeError.length - 1] || 0;
+                                this.currentPhase = 'flip';
+                                this.phaseIndicator.textContent = 'Interactive Coupled Oscillators - Phase: Momentum Flip';
+                                this.flipProgress = 0;
+                            } else {
+                                this.finalCumulativeError = this.cumulativeError[this.cumulativeError.length - 1] || 0;
+                                // End of animation
+                                this.pause();
+                                return;
+                            }
+                        }
+                    }
+                    
+                    this.draw();
+                    this.lastFrameTime = currentTime - (deltaTime % this.frameInterval);
+                }
+                
+                this.animationFrame = requestAnimationFrame((time) => this.animate(time));
+            }
+        }
+        
+        // Initialize the simulation
+        const sim = new CoupledOscillators();
+    </script>
+</body>
+</html>
