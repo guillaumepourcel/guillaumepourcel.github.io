@@ -14,20 +14,19 @@ This interactive visualization demonstrates coupled harmonic oscillators. You ca
     width: 100%;
     margin: 20px 0;
     position: relative;
-    overflow: hidden;
+    overflow: auto;
 }
 
 #responsive-iframe {
-    width: 100%;
-    min-height: 800px;
     border: 1px solid #ccc;
     border-radius: 8px;
     display: block;
+    transform-origin: 0 0;
 }
 </style>
 
 <div id="iframe-container">
-<iframe id="responsive-iframe" src="/assets/html/coupled_oscillators_v0.html"></iframe>
+<iframe id="responsive-iframe" src="/assets/html/coupled_oscillators_v0.html" width="1500" height="1100"></iframe>
 </div>
 
 <script>
@@ -38,30 +37,30 @@ document.addEventListener('DOMContentLoaded', function() {
     function resizeIframe() {
         if (!container || !iframe) return;
         
-        // Get the container width
         const containerWidth = container.offsetWidth;
+        const originalWidth = 1500;
+        const originalHeight = 1100;
         
-        // Set aspect ratio (1500:1100 from original dimensions)
-        const aspectRatio = 1100 / 1500;
+        // Calculate scale to fit container width
+        const scale = containerWidth / originalWidth;
         
-        // Calculate height based on width and aspect ratio
-        const height = Math.max(containerWidth * aspectRatio, 800);
+        // Apply scale transform
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.width = originalWidth + 'px';
+        iframe.style.height = originalHeight + 'px';
         
-        // Set the iframe height
-        iframe.style.height = height + 'px';
+        // Adjust container height to match scaled content
+        container.style.height = (originalHeight * scale) + 'px';
     }
     
-    // Initial resize with a small delay to ensure layout is ready
     setTimeout(resizeIframe, 100);
     
-    // Resize on window resize with debouncing
     let resizeTimer;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(resizeIframe, 250);
     });
     
-    // Also resize when iframe loads
     iframe.addEventListener('load', resizeIframe);
 });
 </script>
