@@ -13,8 +13,8 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-**📢 @NeurIPS25 | Looking for industry internship or full-time position as AI Research Scientist**
-At neurips I'll present:
+**📢 @NeurIPS25 | Finishing my PhD and seeking industry internship or full-time position as AI Research Scientist**
+At NeurIPS, I'll present:
 - [RHEL](https://arxiv.org/abs/2506.05259) (first-author, [oral](https://neurips.cc/virtual/2025/loc/san-diego/oral/115363))
 - [RHEL for neuroscience](https://openreview.net/forum?id=qFQXZoA9PR) (last-author, workshop poster)
 - [Training LLM for persuasion improves generalization](https://openreview.net/forum?id=uALCxj1tNe) (last-author, workshop poster)
