@@ -11,7 +11,7 @@
   Guillaume  Pourcel
 
 
-  | blog
+  | rhel demo
 
 </title>
 <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
@@ -37,7 +37,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
 
 <link rel="stylesheet" href="/assets/css/main.css">
-<link rel="canonical" href="/blog/">
+<link rel="canonical" href="/rhel-demo/">
 
 <!-- JQuery -->
 <!-- jQuery -->
@@ -134,9 +134,11 @@
           
           
           
-          <li class="nav-item ">
+          <li class="nav-item active">
               <a class="nav-link" href="/rhel-demo/">
                 rhel demo
+                
+                <span class="sr-only">(current)</span>
                 
               </a>
           </li>
@@ -186,56 +188,91 @@
     <div class="container mt-5">
       <div class="post">
 
-  <div class="header-bar">
-    <h1></h1>
-    <h2>a simple whitespace theme for academics</h2>
-  </div>
+  <header class="post-header">
+    <h1 class="post-title">rhel demo</h1>
+    <p class="post-description"></p>
+  </header>
 
+  <article>
+    <h2 id="rhel-demo-coupled-harmonic-oscillators">RHEL Demo: Coupled Harmonic Oscillators</h2>
 
-  <ul class="post-list">
-    
-      <li>
-        <h3><a class="post-title" href="/blog/2021/distill/">a distill-style blog post</a></h3>
-        <p class="post-meta">May 22, 2021</p>
-        <p>an example of a distill-style blog post and main elements</p>
-      </li>
-    
-      <li>
-        <h3><a class="post-title" href="/blog/2020/github-metadata/">a post with github metadata</a></h3>
-        <p class="post-meta">September 28, 2020</p>
-        <p>a quick run down on accessing github metadata.</p>
-      </li>
-    
-      <li>
-        <h3><a class="post-title" href="/blog/2020/twitter/">a post with twitter</a></h3>
-        <p class="post-meta">September 28, 2020</p>
-        <p>an example of a blog post with twitter</p>
-      </li>
-    
-  </ul>
+<p>This demonstration visualizes the Recurrent Hamiltonian Echo Learning (RHEL) algorithm applied to a system of coupled harmonic oscillators, as described in the paper <a href="https://openreview.net/forum?id=w1ihNiIBOc&amp;noteId=w1ihNiIBOc">“Learning long range dependencies through time reversal symmetry breaking”</a> by Pourcel &amp; Ernoult (2025).</p>
 
-  
-<nav aria-label="Blog page naviation">
-  <ul class="pagination pagination-lg justify-content-center">
-    <li class="page-item disabled">
-      <a class="page-link" href="" tabindex="-1" aria-disabled="">Newer</a>
-    </li>
-    
-      
-        <li class="page-item active"><a class="page-link" href="/blog/index.html" title="blog">1</a></li>
-      
-        <li class="page-item "><a class="page-link" href="/blog/page/2/index.html" title="blog - page 2">2</a></li>
-      
-        <li class="page-item "><a class="page-link" href="/blog/page/3/index.html" title="blog - page 3">3</a></li>
-      
-    
-    <li class="page-item ">
-      <a class="page-link" href="/blog/page/2/">Older</a>
-    </li>
-  </ul>
-</nav>
+<video controls="" preload="metadata" style="width: 100%; max-width: 960px;">
+  <source src="/assets/videos/rhel-demo.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
 
+<h2 id="video-visualization-guide">Video Visualization Guide</h2>
 
+<p>The demonstration consists of three synchronized panels:</p>
+
+<h3 id="top-panel-physical-system-animation">Top Panel: Physical System Animation</h3>
+<ul>
+  <li><strong>Red mass (m₁)</strong>: Connected to left wall via spring k₁</li>
+  <li><strong>Blue mass (m₂)</strong>: Connected to mass 1 via spring k₁₂ (green) and right wall via spring k₂</li>
+  <li><strong>Yellow trajectory (target)</strong>: The desired position φ₃(t) following a sinusoidal pattern</li>
+</ul>
+
+<h3 id="middle-panel-position-trajectories">Middle Panel: Position Trajectories</h3>
+<ul>
+  <li><strong>Solid lines</strong>: Forward trajectory from t = -T to 0 (drawing left to right as time evolves)
+    <ul>
+      <li>Red: φ₁(t) - position of mass 1</li>
+      <li>Blue: φ₂(t) - position of mass 2</li>
+      <li>Yellow: φ₃(t) - target position</li>
+    </ul>
+  </li>
+  <li><strong>Dotted lines</strong>: Echo trajectory from t = 0 to T (overlapped on same plot)
+    <ul>
+      <li>Shows the perturbed backward evolution after momentum reversal</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="bottom-panel-gradient-accumulator">Bottom Panel: Gradient Accumulator</h3>
+<p>Displays the quantity \((\phi_2^{\text{echo}} - \phi_1^{\text{echo}})^2\) which, when integrated, gives the gradient with respect to the coupling spring k₁₂. The cost is defined as the integrated L² loss between φ₂ and φ₃:</p>
+
+\[\mathcal{L} = \int_{-T}^0 (\phi_2(t) - \phi_3(t))^2 dt\]
+
+<p>The theoretical result of RHEL shows that the difference between the echo and forward phase learning quantities equals the gradient of the cost:</p>
+
+\[\Delta^{\text{RHEL}}_{k_{12}} = \lim_{\epsilon \to 0} \frac{1}{\epsilon} \int_0^T \left[(\phi_2^{\text{echo}}(t,\epsilon) - \phi_1^{\text{echo}}(t,\epsilon))^2 - (\phi_2(-t) - \phi_1(-t))^2\right] dt = \nabla_{k_{12}} \mathcal{L}\]
+
+<p>This difference between the forward and echo phase integrals encodes the gradient information for training the green spring parameter.</p>
+
+<h2 id="system-dynamics">System Dynamics</h2>
+
+<h3 id="hamiltonian">Hamiltonian</h3>
+
+\[H[\Phi, \theta, u] = \sum_{i=1}^{2} \frac{\pi_i^2}{2m_i} + \frac{1}{2}k_1\phi_1^2 + \frac{1}{2}k_{12}(\phi_2 - \phi_1)^2 + \frac{1}{2}k_2\phi_2^2\]
+
+<h3 id="forward-phase-t---t-0">Forward Phase (t ∈ [-T, 0])</h3>
+<p>The system evolves according to:</p>
+
+\[\dot{\phi}_i = \frac{\pi_i}{m_i}, \quad \dot{\pi}_1 = -k_1\phi_1 + k_{12}(\phi_2 - \phi_1), \quad \dot{\pi}_2 = -k_{12}(\phi_2 - \phi_1) - k_2\phi_2\]
+
+<h3 id="echo-phase-t--0-t">Echo Phase (t ∈ [0, T])</h3>
+<p>After momentum reversal (π → -π), the system evolves backward with nudging:</p>
+
+\[\dot{\phi}_i^{\text{echo}} = \frac{\pi_i^{\text{echo}}}{m_i}, \quad \dot{\pi}_1^{\text{echo}} = -k_1\phi_1^{\text{echo}} + k_{12}(\phi_2^{\text{echo}} - \phi_1^{\text{echo}}), \quad \dot{\pi}_2^{\text{echo}} = -k_{12}(\phi_2^{\text{echo}} - \phi_1^{\text{echo}}) - k_2\phi_2^{\text{echo}} - \nabla_{\phi_2^{\text{echo}}}\mathcal{L}\]
+
+<p>where the loss measures the deviation from target.</p>
+
+<h2 id="learning-mechanism">Learning Mechanism</h2>
+
+<p>The RHEL algorithm computes parameter gradients through physical trajectory differences:</p>
+
+<ol>
+  <li><strong>Forward pass</strong>: System evolves naturally (solid lines in middle panel)</li>
+  <li><strong>Momentum flip</strong>: At t=0, reverse all momenta</li>
+  <li><strong>Echo pass</strong>: Evolve backward with nudging perturbation (dotted lines)</li>
+  <li><strong>Gradient extraction</strong>: The gap between echo trajectories with ±ε nudging encodes the gradient</li>
+</ol>
+
+<p>The bottom panel shows how the accumulated difference in (φ₂ - φ₁)² between phases directly provides the gradient for updating the coupling spring k₁₂, demonstrating how RHEL performs gradient computation through purely forward-time physical dynamics.</p>
+
+  </article>
 
 </div>
 
